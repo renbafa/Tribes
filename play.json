@@ -8,7 +8,7 @@
   "Force End" : false,
   "Population Size" : 20,
   "Players" : ["MCTS", "RHEA"],
-  "Tribes" : ["Xin Xi", "Oumaji"],
+  "Tribes" : ["Athenian", "Xin Xi"],
   "Verbose" : false,
 
   "Replay File Name" : "save/1590072023986/0_0/game.json",
