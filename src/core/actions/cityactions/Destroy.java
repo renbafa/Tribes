@@ -20,6 +20,10 @@ public class Destroy extends CityAction
     public boolean isFeasible(final GameState gs)
     {
         City city = (City) gs.getActor(this.cityId);
+        Board b = gs.getBoard();
+        Tribe tribe = gs.getTribe(city.getTribeId());
+
+
         if(gs.getBoard().getBuildingAt(targetPos.x, targetPos.y) == null) return false;
         Building buildingToRemove = city.getBuilding(targetPos.x, targetPos.y);
         if(buildingToRemove == null || buildingToRemove.type == null) return false;

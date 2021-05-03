@@ -1,6 +1,5 @@
 package core.game;
 
-import core.Constants;
 import core.TechnologyTree;
 import core.TribesConfig;
 import core.Types;
@@ -11,13 +10,15 @@ import core.actors.units.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import utils.Vector2d;
-import utils.graph.*;
 
 import java.util.*;
 
 import static core.Types.TERRAIN.*;
 
 public class Board {
+
+    // Array for the type of weather that each tile of board will have
+    private Types.WEATHER[][] weathers;
 
     // Array for the type of terrain that each tile of board will have
     private Types.TERRAIN[][] terrains;
@@ -66,13 +67,14 @@ public class Board {
     /**
      * Loads a board from a JSON object
      * @param JBoard JSON object to load the board from
-     * @param capitalIDs IDs of the cities that are capiral
+     * @param capitalIDs IDs of the cities that are capital
      * @param activeTribeID id of the tribe that is next ot move
      * @param tribes All tribes in the game
      */
     public Board(JSONObject JBoard, int[] capitalIDs, int activeTribeID, Tribe[] tribes){
         this.gameActors = new HashMap<>();
         this.capitalIDs = capitalIDs;
+        JSONArray JWeather = JBoard.getJSONArray("weather");
         JSONArray JResource = JBoard.getJSONArray("resource");
         JSONArray JTerrain = JBoard.getJSONArray("terrain");
         JSONArray JUnit = JBoard.getJSONArray("unitID");
@@ -81,6 +83,7 @@ public class Board {
         JSONArray JBuilding = JBoard.getJSONArray("building");
 
         size = JResource.length();
+        weathers = new Types.WEATHER[size][size];
         terrains = new Types.TERRAIN[size][size];
         resources = new Types.RESOURCE[size][size];
         buildings = new Types.BUILDING[size][size];
@@ -93,6 +96,7 @@ public class Board {
 
         boolean[][] networkTiles = new boolean[size][size];
         for (int i=0; i<size; i++){
+            JSONArray weatherItem = JWeather.getJSONArray(i);
             JSONArray resourceItem = JResource.getJSONArray(i);
             JSONArray terrainItem = JTerrain.getJSONArray(i);
             JSONArray unitIDItem = JUnit.getJSONArray(i);
@@ -101,6 +105,7 @@ public class Board {
             JSONArray buildingItem = JBuilding.getJSONArray(i);
             for (int j=0; j<size; j++){
                 terrains[i][j] = Types.TERRAIN.getTypeByKey(terrainItem.getInt(j));
+                weathers[i][j] = Types.WEATHER.getTypeByKey(weatherItem.getInt(j));
                 if (resourceItem.getInt(j) != -1) {
                     resources[i][j] = Types.RESOURCE.getTypeByKey(resourceItem.getInt(j));
                 }
@@ -127,6 +132,7 @@ public class Board {
 
         this.size = size;
         this.capitalIDs = new int[tribes.length];
+        weathers = new Types.WEATHER[size][size];
         terrains = new Types.TERRAIN[size][size];
         resources = new Types.RESOURCE[size][size];
         buildings = new Types.BUILDING[size][size];
@@ -138,10 +144,11 @@ public class Board {
         for(Tribe t : tribes)
             t.initObsGrid(size);
 
-        //Initialise tile IDs
+        //Initialise weather
         for (int x = 0; x < size; x++) {
             for (int y = 0; y < size; y++) {
                 tileCityId[x][y] = -1;
+                weathers[x][y] = Types.WEATHER.SUNNY;
             }
         }
 
@@ -167,6 +174,7 @@ public class Board {
         copyBoard.size = this.size;
         copyBoard.tribes = new Tribe[this.tribes.length];
         copyBoard.terrains = new Types.TERRAIN[size][size];
+        copyBoard.weathers = new Types.WEATHER[size][size];
         copyBoard.resources = new Types.RESOURCE[size][size];
         copyBoard.buildings = new Types.BUILDING[size][size];
         copyBoard.units = new int[size][size];
@@ -187,6 +195,7 @@ public class Board {
                 if(!partialObs || tribes[playerId].isVisible(x,y))
                 {
                     copyBoard.units[x][y] = units[x][y];
+                    copyBoard.setWeatherAt(x, y, weathers[x][y]);
                     copyBoard.setTerrainAt(x, y, terrains[x][y]);
                     copyBoard.setResourceAt(x, y, maskResource(playerId, x, y));
                     copyBoard.setBuildingAt(x, y, buildings[x][y]);
@@ -947,6 +956,17 @@ public class Board {
     }
 
     /**
+     * Adds a rain to the board at position x,y.
+     * @param x x coordinate of the rain position
+     * @param y y coordinate of the rain position
+     */
+    public void addRain(int x, int y)
+    {
+        setWeatherAt(x,y, Types.WEATHER.RAIN);
+    }
+
+
+    /**
      * Returns true if tribeId can build a road in (x,y)
      * It does not check for tribe stars or technology, *only* for board features (territory, terrain and visibility)
      * @param tribeId id of the tribe that could build roads
@@ -976,6 +996,25 @@ public class Board {
         return false;
     }
 
+    /**
+     * Returns true if unitId can make rain in (x,y)
+     * It does not check for tribe stars or technology, *only* for board features (territory, visibility)
+     * @param tribeId id of the unit that could makeRain
+     * @return the list of positions where a rain can be made
+     */
+    public boolean canMakeRainAt(int tribeId, int x, int y)
+    {
+        // Visible tile?
+        if(tribes[tribeId].isVisible(x, y))
+        {
+                //Only on tiles that are neutral or in my cities
+                int cityId = tileCityId[x][y];
+                if(cityId == -1 || tribes[tribeId].controlsCity(cityId))
+                { return true; }
+
+        }
+        return false;
+    }
 
     /**
      * Returns a list of positions where roads can be built by a certain tribe.
@@ -993,6 +1032,20 @@ public class Board {
         }
         return positions;
     }
+
+
+    public ArrayList<Vector2d> getMakeRainPositions(int tribeId)
+    {
+        ArrayList<Vector2d> positions = new ArrayList<>();
+        for (int i=0; i<size; i++){
+            for (int j=0; j<size; j++){
+                if(canMakeRainAt(tribeId, i, j))
+                    positions.add(new Vector2d(i,j));
+            }
+        }
+        return positions;
+    }
+
 
     /**
      * Removes a port from the network at position x, y
@@ -1023,9 +1076,11 @@ public class Board {
     public void setTribes(Tribe[] t){ this.tribes = t; }
     boolean getNetworkTilesAt(int x, int y) { return this.tradeNetwork.getTradeNetworkValue(x,y); }
     public int[][] getUnits(){ return this.units; }
+    public Types.WEATHER getWeatherAt(int x, int y){ return weathers[x][y]; }
     public Types.TERRAIN getTerrainAt(int x, int y){ return terrains[x][y]; }
     int getUnitIDAt(int x, int y){ return units[x][y]; }
     public void setResourceAt(int x, int y, Types.RESOURCE r){ resources[x][y] =  r; }
+    public void setWeatherAt(int x, int y, Types.WEATHER t){ weathers[x][y] =  t; }
     public void setTerrainAt(int x, int y, Types.TERRAIN t){ terrains[x][y] =  t; }
     public void setBuildingAt(int x, int y, Types.BUILDING b){ buildings[x][y] = b; }
     public Types.RESOURCE getResourceAt(int x, int y){ return resources[x][y]; }

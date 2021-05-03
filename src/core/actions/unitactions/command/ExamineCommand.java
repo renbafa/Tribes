@@ -30,6 +30,7 @@ public class ExamineCommand implements ActionCommand {
             Tribe t = gs.getTribe(unit.getTribeId());
             Random rnd = gs.getRandomGenerator();
             TechnologyTree technologyTree = t.getTechTree();
+            Board board = gs.getBoard();
 
             int handlerCityId = t.getCitiesID().get(0);
             if(t.controlsCapital())
@@ -43,7 +44,6 @@ public class ExamineCommand implements ActionCommand {
 
             switch (bonus) {
                 case SUPERUNIT:
-                    Board board = gs.getBoard();
 
                     Vector2d spawnPos = unit.getPosition().copy();
                     Types.TERRAIN terr = board.getTerrainAt(spawnPos.x, spawnPos.y);

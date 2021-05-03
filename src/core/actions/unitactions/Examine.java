@@ -3,6 +3,7 @@ package core.actions.unitactions;
 import core.Types;
 import core.actions.Action;
 import core.actors.Tribe;
+import core.game.Board;
 import core.game.GameState;
 import core.actors.units.Unit;
 import utils.Vector2d;
@@ -23,6 +24,8 @@ public class Examine extends UnitAction
         Unit unit = (Unit) gs.getActor(this.unitId);
         Vector2d unitPos = unit.getPosition();
         Tribe t = gs.getTribe(unit.getTribeId());
+        Board b = gs.getBoard();
+
         if(t.getCitiesID().size() == 0)
             return false;
 

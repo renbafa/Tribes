@@ -2,6 +2,8 @@ package core.actions.tribeactions;
 import core.TribesConfig;
 import core.actions.Action;
 import core.actors.Tribe;
+import core.actors.units.Unit;
+import core.game.Board;
 import core.game.GameState;
 import utils.Vector2d;
 import core.Types;
@@ -9,6 +11,9 @@ import core.Types;
 public class BuildRoad extends TribeAction {
 
     private Vector2d position;
+
+    private int unitId;
+
     public BuildRoad(int tribeId)
     {
         super(Types.ACTION.BUILD_ROAD);
@@ -20,6 +25,12 @@ public class BuildRoad extends TribeAction {
     public Vector2d getPosition() {
         return position;
     }
+
+    public void setUnitId(int unitId) {this.unitId = unitId;}
+    public int getUnitId() {
+        return unitId;
+    }
+
 
     @Override
     public boolean isFeasible(final GameState gs) {

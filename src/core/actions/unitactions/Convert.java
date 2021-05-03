@@ -4,6 +4,7 @@ import core.Types;
 import core.actions.Action;
 import core.actors.City;
 import core.actors.Tribe;
+import core.game.Board;
 import core.game.GameState;
 import core.actors.units.Unit;
 
@@ -27,6 +28,26 @@ public class Convert extends UnitAction
     public boolean isFeasible(final GameState gs) {
         Unit target = (Unit) gs.getActor(this.targetId);
         Unit unit = (Unit) gs.getActor(this.unitId);
+        Tribe targetTribe = gs.getTribe(target.getTribeId());
+        Tribe unitTribe = gs.getTribe(unit.getTribeId());
+        Board board = gs.getBoard();
+
+
+        /**
+         * the following lines show the negative effect of player being on a position where rain is placed,
+         */
+
+        if (board.getWeatherAt(unit.getPosition().x,unit.getPosition().y) == Types.WEATHER.RAIN) {
+            if (unitTribe.getType() != Types.TRIBE.ATHENIAN) {
+                return false;
+            }
+        }
+
+        if (board.getWeatherAt(target.getPosition().x,target.getPosition().y) == Types.WEATHER.RAIN) {
+            if (targetTribe.getType() != Types.TRIBE.ATHENIAN) {
+                return false;
+            }
+        }
 
         //Only MIND_BENDER can execute this action
         if(unit.getType() != Types.UNIT.MIND_BENDER)

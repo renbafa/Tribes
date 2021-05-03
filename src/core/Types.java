@@ -4,6 +4,7 @@ import core.actions.Action;
 import core.actions.ActionCommand;
 import core.actions.cityactions.command.*;
 import core.actions.tribeactions.command.BuildRoadCommand;
+import core.actions.tribeactions.command.MakeRainCommand;
 import core.actions.tribeactions.command.EndTurnCommand;
 import core.actions.tribeactions.command.ResearchTechCommand;
 import core.actions.unitactions.command.*;
@@ -93,7 +94,9 @@ public class Types {
         BARDUR(2, "Bardur", HUNTING, WARRIOR,
                 new Color(76, 76, 76), new Color(176, 178, 178), new Color(70, 58, 58)),
         OUMAJI(3, "Oumaji", RIDING, RIDER,
-                new Color(255, 255, 10), new Color(242, 255, 100), new Color(146, 144, 0));
+                new Color(255, 255, 10), new Color(242, 255, 100), new Color(146, 144, 0)),
+        ATHENIAN(4, "Athenian", ORGANIZATION, WARRIOR,
+                new Color(128,128,0), new Color(107,142,35), new Color(128,128,0));
 
         private int key;
         private String name;
@@ -681,6 +684,77 @@ public class Types {
     }
 
     /**
+     * Different WEATHER allowed in the game.
+     * If more types are added, check methods in this enum to add them where they corresponds
+     * (example: if new power-up is added, include it in getPowerUpTypes() so the board generator
+     *  can place them in the game).
+     */
+    public enum WEATHER {
+
+        //Types and IDs
+        SUNNY(0, "img/weather/sunny.png", '.'),
+        RAIN(1, "img/weather/rain.png", 'r'),
+        SNOW(2, "img/weather/snow.png", 's'),
+        TSUNAMI(3, "img/weather/tsunami.png", 't'),
+        TORNADO(4, "img/weather/tornado.png", 'o');
+
+
+        private String imageFile;
+        private int key;
+        private char mapChar;
+        WEATHER(int numVal, String imageFile, char mapChar) {  this.key = numVal;  this.imageFile = imageFile; this.mapChar = mapChar; }
+
+        public static WEATHER getType(char weatherChar) {
+            for(WEATHER t : Types.WEATHER.values()){
+                if(t.mapChar == weatherChar)
+                    return t;
+            }
+            return null;
+        }
+
+        public int getKey() {  return key; }
+        public char getMapChar() {return mapChar;}
+        public Image getImage(String suffix) {
+            if (suffix == null || suffix.equals("")) {
+                return ImageIO.GetInstance().getImage(imageFile);
+            }
+            String[] splitPath = imageFile.split("\\.");
+            return ImageIO.GetInstance().getImage(splitPath[0] + "-" + suffix + "." + splitPath[1]);
+        }
+
+        public static WEATHER getTypeByKey(int key) {
+            for(WEATHER t : WEATHER.values()){
+                if(t.key == key)
+                    return t;
+            }
+            return null;
+        }
+
+
+        /**
+         * Checks if two boards (arrays of tiletypes) are the same
+         * @param board1 one board to check
+         * @param board2 the other board to check
+         * @return true if they're equals.
+         */
+        public static boolean boardEquals(WEATHER[][] board1, WEATHER[][] board2) {
+
+            if( (board1.length != board2.length) || (board1[0].length != board2[0].length))
+                return false;
+
+            for (int i = 0; i < board1.length; i++) {
+                for (int i1 = 0; i1 < board1[i].length; i1++) {
+                    WEATHER b1i = board1[i][i1];
+                    WEATHER b2i = board2[i][i1];
+                    if (b1i != null && b2i != null && b1i != b2i)
+                        return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    /**
      * Different TERRAIN allowed in the game.
      * If more types are added, check methods in this enum to add them where they corresponds
      * (example: if new power-up is added, include it in getPowerUpTypes() so the board generator
@@ -769,6 +843,7 @@ public class Types {
 
         //tribe
         BUILD_ROAD(null, ROADS),
+        MAKE_RAIN(null, null),
         END_TURN(null, null),
         RESEARCH_TECH(null, null),
 
@@ -821,6 +896,7 @@ public class Types {
                 case BUILD_ROAD: return new BuildRoadCommand();
                 case END_TURN: return new EndTurnCommand();
                 case RESEARCH_TECH: return new ResearchTechCommand();
+                case MAKE_RAIN: return new MakeRainCommand();
 
                 //Unit actions
                 case ATTACK: return new AttackCommand();

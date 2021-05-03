@@ -562,6 +562,19 @@ public class Tribe extends Actor {
         return canBuildRoad && hasMoney;
     }
 
+    /**
+     * Checks if the tribe can make rain
+     * @return if tribe can make rain
+     */
+    public boolean canMakeRains() {
+    //    //Factors for tree building in general: tech and enough stars.
+    //    boolean canMakeRain= techTree.isResearched(Types.TECHNOLOGY.FREE_SPIRIT);
+        boolean hasMoney = stars >= TribesConfig.RAIN_COST;
+        return hasMoney;
+    }
+
+
+
     public void capturedCity(GameState gameState, City captured)
     {
         this.addCity(captured.getActorId());

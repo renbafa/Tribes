@@ -25,6 +25,9 @@ public class TribeActionBuilder
         //Build Road
         allActions.addAll(new BuildRoadFactory().computeActionVariants(tribe, gs));
 
+        //Make Rain
+        allActions.addAll(new MakeRainFactory().computeActionVariants(tribe, gs));
+
         //Research Tech
         allActions.addAll(new ResearchTechFactory().computeActionVariants(tribe, gs));
 

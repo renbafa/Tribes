@@ -26,6 +26,16 @@ public class GameState {
     // Random generator for the game state.
     private Random rnd;
 
+    //to keep track of turns, iterating at the last player's turn
+    private int RainTick = 0;
+
+    // arrays that will be used to create many rains
+    private int [] rain_positions_x;
+    private int [] rain_positions_y;
+
+    //weather counter used in endTurn
+    private int weatherCounter = 0;
+
     // Current tick of the game.
     private int tick = 0;
 
@@ -70,19 +80,21 @@ public class GameState {
         this.ranking = new TreeSet<>();
         this.turnMustEnd = false;
         this.gameIsOver = false;
+        this.rain_positions_x = new int[10];
+        this.rain_positions_y = new int[10];
     }
 
     //This Constructor is used when loading from a savegame.
-    public GameState(Random rnd, Types.GAME_MODE gameMode, Tribe[] tribes, Board board, int tick){
+    public GameState(Random rnd, Types.GAME_MODE gameMode, Tribe[] tribes, Board board, int tick) {
         this(rnd, gameMode);
         this.tick = tick;
         this.board = board;
         board.setTribes(tribes);
 
-        if (board.getActiveTribeID() == tribes.length-1){
+        if (board.getActiveTribeID() == tribes.length - 1) {
             this.tick++;
             board.setActiveTribeID(0);
-        }else{
+        } else {
             board.setActiveTribeID(board.getActiveTribeID() + 1);
         }
 
@@ -97,7 +109,7 @@ public class GameState {
     void init(long levelgen_seed, Types.TRIBE[] tribes) {
 
         LevelGenerator levelGen = new LevelGenerator(levelgen_seed);
-        levelGen.init(TribesConfig.DEFAULT_MAP_SIZE[tribes.length-1], 3, 4, 0.5, tribes);
+        levelGen.init(TribesConfig.DEFAULT_MAP_SIZE[tribes.length - 1], 3, 4, 0.5, tribes);
         levelGen.generate();
         String[] lines = levelGen.gelLevelLines();
         initGameState(lines);
@@ -113,6 +125,7 @@ public class GameState {
 
     /**
      * Initializes a game state from a series of Strings that determine the initial level disposition
+     *
      * @param lines all components for the board in its initial state.
      */
     private void initGameState(String[] lines) {
@@ -121,8 +134,7 @@ public class GameState {
         board = ll.buildLevel(lines, rnd);
 
         Tribe[] tribes = board.getTribes();
-        for(Tribe tribe : tribes)
-        {
+        for (Tribe tribe : tribes) {
             int startingCityId = tribe.getCitiesID().get(0);
             City c = (City) board.getActor(startingCityId);
             Vector2d cityPos = c.getPosition();
@@ -131,22 +143,25 @@ public class GameState {
 
         canEndTurn = new boolean[tribes.length];
 
+        weatherCounter = 0;
+
     }
 
     /**
      * Gets a game actor from its id.
+     *
      * @param actorId the id of the actor to retrieve
      * @return the actor, null if the id doesn't correspond to an actor (note that it may have
      * been deleted if the actor was removed from the game).
      */
-    public Actor getActor(int actorId)
-    {
+    public Actor getActor(int actorId) {
         return board.getActor(actorId);
     }
 
     /**
      * Returns the current tick of the game. One tick encompasses a turn for all
      * players in the game.
+     *
      * @return current tick of the game.
      */
     public int getTick() {
@@ -156,8 +171,7 @@ public class GameState {
     /**
      * Increases the tick of the game. One tick encompasses a turn for all players in the game.
      */
-    void incTick()
-    {
+    void incTick() {
         tick++;
     }
 
@@ -165,14 +179,13 @@ public class GameState {
      * Computes all the actions that a player can take given the current game state.
      * Warning: This method can be expensive. In game loop, its computation sits outside the
      * agent's decision time, but agents can use it on their forward models at real expense.
+     *
      * @param tribe Tribe for which actions are being computed.
      */
-    void computePlayerActions(Tribe tribe)
-    {
+    void computePlayerActions(Tribe tribe) {
         board.setActiveTribeID(tribe.getTribeId());
 
-        if(computedActionTribeIdFlag != -1 && computedActionTribeIdFlag == tribe.getTribeId())
-        {
+        if (computedActionTribeIdFlag != -1 && computedActionTribeIdFlag == tribe.getTribeId()) {
             //Actions already computed and next() hasn't been called. No need to recompute again.
             return;
         }
@@ -182,7 +195,7 @@ public class GameState {
         this.unitActions = new HashMap<>();
         this.tribeActions = new ArrayList<>();
 
-        if(gameIsOver)
+        if (gameIsOver)
             return; // no actions available if the game is over
 
 
@@ -194,25 +207,21 @@ public class GameState {
         int i = 0;
         levelingUp = false;
 
-        while (!levelingUp && i < numCities)
-        {
+        while (!levelingUp && i < numCities) {
             int cityId = cities.get(i);
             City c = (City) board.getActor(cityId);
             ArrayList<Action> actions = cab.getActions(this, c);
             levelingUp = cab.cityLevelsUp();
 
-            if(actions.size() > 0)
-            {
-                if(levelingUp)
-                {
+            if (actions.size() > 0) {
+                if (levelingUp) {
                     //We may have already processed other cities. Actions for those should be eliminated.
                     cityActions.clear();
                 }
                 cityActions.put(cityId, actions);
             }
 
-            if(!levelingUp)
-            {
+            if (!levelingUp) {
                 ArrayList<Integer> unitIds = c.getUnitsID();
                 allUnits.addAll(unitIds);
                 i++;
@@ -220,12 +229,11 @@ public class GameState {
         }
 
         int activeTribeID = board.getActiveTribeID();
-        if(levelingUp)
-        {
+        if (levelingUp) {
             //A city is levelling up. We're done with this city.
             canEndTurn[activeTribeID] = false;
             return;
-        }else{
+        } else {
             canEndTurn[activeTribeID] = true;
         }
 
@@ -234,11 +242,10 @@ public class GameState {
 
         //Units!
         UnitActionBuilder uab = new UnitActionBuilder();
-        for(Integer unitId : allUnits)
-        {
+        for (Integer unitId : allUnits) {
             Unit u = (Unit) board.getActor(unitId);
             ArrayList<Action> actions = uab.getActions(this, u);
-            if(actions.size() > 0)
+            if (actions.size() > 0)
                 unitActions.put(unitId, actions);
         }
 
@@ -250,26 +257,25 @@ public class GameState {
 
     /**
      * Checks if there are actions that the given tribe can take.
+     *
      * @param tribe to check if can execute actions.
      * @return true if actions exist. False if no actions available
      * (that includes if this is not this tribe's turn)
      */
-    boolean existAvailableActions(Tribe tribe)
-    {
+    boolean existAvailableActions(Tribe tribe) {
         int tribeId = tribe.getTribeId();
-        if(board.getActiveTribeID() != tribeId) //Not sure if this is needed, actually.
+        if (board.getActiveTribeID() != tribeId) //Not sure if this is needed, actually.
             return false;
 
         //Just one action for a city or a unit makes this question false.
         int nActions = 0;
-        for(int cityId : cityActions.keySet())
-        {
+        for (int cityId : cityActions.keySet()) {
             nActions += cityActions.get(cityId).size();
-            if(nActions>0) return true;
+            if (nActions > 0) return true;
         }
-        for(int cityId : unitActions.keySet()) {
+        for (int cityId : unitActions.keySet()) {
             nActions += unitActions.get(cityId).size();
-            if(nActions>0) return true;
+            if (nActions > 0) return true;
         }
 
         //No city or unit actions - if there's only one (EndTurn) tribe action, there are no actions available.
@@ -278,18 +284,17 @@ public class GameState {
 
     /**
      * Advances the game state applying a single action received.
+     *
      * @param action to be executed in the current game state.
      */
-    void next(Action action)
-    {
-        if(action != null)
-        {
+    void next(Action action) {
+        if (action != null) {
             boolean executed = false;
             ActionCommand ac = action.getActionType().getCommand();
-            if(ac != null)
+            if (ac != null)
                 executed = ac.execute(action, this);
 
-            if(!executed && ac != null) {
+            if (!executed && ac != null) {
                 System.out.println("Tick: " + this.tick + "; action [" + action + "] couldn't execute?");
                 ac.execute(action, this);
             }
@@ -305,27 +310,25 @@ public class GameState {
      * Advances the game state applying a single action received.
      * It may also compute the actions available for the next step.
      * It handles turn change if 'action' is an EndTurn action that can be executed.
-     * @param action to be executed in the current game state.
+     *
+     * @param action         to be executed in the current game state.
      * @param computeActions true if actions available after action has been executed should be computed.
      */
-    public void advance(Action action, boolean computeActions)
-    {
-        if(action != null)
-        {
+    public void advance(Action action, boolean computeActions) {
+        if (action != null) {
             boolean executed = false;
             ActionCommand ac = action.getActionType().getCommand();
-            if(ac != null)
+            if (ac != null)
                 executed = ac.execute(action, this);
 
-            if(!executed && ac != null) {
+            if (!executed && ac != null) {
                 System.out.println("FM: Action [" + action + "] couldn't execute?");
                 ac.execute(action, this);
             }
 
-            if(executed) {
+            if (executed) {
                 //it's an end turn
-                if(action.getActionType() == Types.ACTION.END_TURN)
-                {
+                if (action.getActionType() == Types.ACTION.END_TURN) {
                     //manage the end of this turn.
                     this.endTurn(getActiveTribe());
 
@@ -333,17 +336,15 @@ public class GameState {
                     gameOver();
 
                     //Advance player
-                    if(!gameIsOver)
-                    {
+                    if (!gameIsOver) {
                         int curActiveTribeId = board.getActiveTribeID();
                         boolean playerFound = false;
-                        while(!playerFound)
-                        {
+                        while (!playerFound) {
                             curActiveTribeId = (curActiveTribeId + 1) % canEndTurn.length;
-                            if(board.getTribe(curActiveTribeId).getWinner() != Types.RESULT.LOSS)
+                            if (board.getTribe(curActiveTribeId).getWinner() != Types.RESULT.LOSS)
                                 playerFound = true;
 
-                            if(curActiveTribeId == board.getActiveTribeID()) {
+                            if (curActiveTribeId == board.getActiveTribeID()) {
                                 System.out.println("ForwardModel ERROR: this shouldn't happen (all players but " +
                                         board.getActiveTribeID() + " lost, but it's not game over?)");
                                 gameOver();
@@ -367,20 +368,106 @@ public class GameState {
 
     /**
      * Ends this turn. Executes a Recover action on all the units that are not fresh
+     *
      * @param tribe tribe whose turn is ending.
      */
-    void endTurn(Tribe tribe)
-    {
+    void endTurn(Tribe tribe) {
         //For all units that didn't execute any action, a Recover action is executed.
         ArrayList<Integer> allTribeUnits = new ArrayList<>();
         ArrayList<Integer> tribeCities = tribe.getCitiesID();
 
         //1. Get all units
-        for(int cityId : tribeCities)
-        {
+        for (int cityId : tribeCities) {
             City city = (City) getActor(cityId);
             allTribeUnits.addAll(city.getUnitsID());
         }
+
+
+        /**
+         * Creation and duration of random weather features throughout the grid
+         */
+
+        //see how many tribes there are
+        Tribe[] tribes = board.getTribes();
+
+        //size variable which will be used to limit where weather appears
+        int size = board.getSize();
+
+        int duration = 5;
+        int number_rains = rain_positions_x.length;
+
+        //if RainTick remainder operator is equal to 0, rain weather is created
+        if (this.RainTick % duration == 0) {
+
+            for (int x = 0; x < size; x++) {
+                for (int y = 0; y < size; y++) {
+
+                    //board.tileCityId[x][y] = -1;
+                    if (board.getWeatherAt(x, y) == Types.WEATHER.RAIN) {
+                        board.setWeatherAt(x, y, Types.WEATHER.SUNNY);
+
+                        //state that this is the end of the loop
+                        //System.out.println("end of rain ");
+
+                    }
+                }
+            }
+
+            int z = 0;
+
+            while(z< number_rains){
+                this.rain_positions_x[z] = rnd.nextInt(board.getSize());
+                this.rain_positions_y[z] = rnd.nextInt(board.getSize());
+
+                if(board.getWeatherAt(this.rain_positions_x[z], this.rain_positions_y[z]) != Types.WEATHER.RAIN){
+                    //randomize x and y with rnd function and then assign to setweatherAt
+                    board.setWeatherAt(this.rain_positions_x[z], this.rain_positions_y[z], Types.WEATHER.RAIN);
+
+                    //state the coordinates of the weather, for the user's convenience
+                    //System.out.println("creating rain " + this.rain_positions_x[z] + ", " + this.rain_positions_y[z]);
+
+                    z+=1;
+                }
+            }
+
+
+
+        }
+
+
+        //for the rest of the duration up until the end (end_weather_turn), move weather
+        else if (this.RainTick % duration != 0) {
+            for (int z = 0; z < number_rains; z++) {
+                //for loop that goes through the entire game tile, making any position that is rain --> sunny
+                for (int x = 0; x < size; x++) {
+                    for (int y = 0; y < size; y++) {
+                        if (board.getWeatherAt(x, y) == Types.WEATHER.RAIN) {
+                            //set the rain's position to sunny
+                            board.setWeatherAt(x, y, Types.WEATHER.SUNNY);
+                        }
+                    }
+                }
+
+                //use x,y_pos to base the relocation of the rain weather element
+                Vector2d currentPos = new Vector2d(this.rain_positions_x[z], this.rain_positions_y[z]);
+
+                //there is a limit as to how far the relocation can be, moving the element near the original location
+                LinkedList<Vector2d> neighs = currentPos.neighborhood(1, 0, size);
+                Vector2d next = neighs.get(rnd.nextInt(neighs.size()));
+
+                //present where that location is, for the user's convenience
+                //System.out.println("next rain position: " + next.x + ", " + next.y);
+
+                this.rain_positions_x[z] = next.x;
+                this.rain_positions_y[z] = next.y;
+
+                //set weather of that coordinate to rain
+                board.setWeatherAt(this.rain_positions_x[z], this.rain_positions_y[z], Types.WEATHER.RAIN);
+            }
+        }
+
+        this.RainTick++;
+
 
         //Heal the ones that were in a FRESH state.
         allTribeUnits.addAll(tribe.getExtraUnits());    //Add the extra units that don't belong to a city.
@@ -521,6 +608,10 @@ public class GameState {
         copy.tick = this.tick;
         copy.turnMustEnd = turnMustEnd;
         copy.gameIsOver = gameIsOver;
+        copy.RainTick = this.RainTick;
+        copy.rain_positions_x = rain_positions_x;
+        copy.rain_positions_y = rain_positions_y;
+        copy.weatherCounter = weatherCounter;
 
         int numTribes = getTribes().length;
         copy.canEndTurn = new boolean[numTribes];

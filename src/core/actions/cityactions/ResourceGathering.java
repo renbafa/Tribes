@@ -33,6 +33,8 @@ public class ResourceGathering extends CityAction
         Board b = gs.getBoard();
         Tribe t = b.getTribe(city.getTribeId());
 
+
+
         // Check if resource can be gathered
         if(b.getResourceAt(targetPos.x, targetPos.y) == this.resource && t.getStars() >= this.resource.getCost()){
             switch (this.resource){

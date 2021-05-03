@@ -23,6 +23,7 @@ public class BuildCommand implements ActionCommand {
         Board board = gs.getBoard();
 
         if(action.isFeasible(gs)) {
+
             Vector2d targetPos = action.getTargetPos();
             Types.BUILDING buildingType = action.getBuildingType();
 

@@ -6,6 +6,7 @@ import core.actions.ActionFactory;
 import core.actions.unitactions.Capture;
 import core.actors.Actor;
 import core.actors.City;
+import core.actors.Tribe;
 import core.actors.units.Unit;
 import core.game.Board;
 import core.game.GameState;
@@ -18,6 +19,8 @@ public class CaptureFactory implements ActionFactory {
     public LinkedList<Action> computeActionVariants(final Actor actor, final GameState gs) {
         Unit unit = (Unit) actor;
         LinkedList<Action> captures = new LinkedList<>();
+        Board b = gs.getBoard();
+        //Tribe thisTribe = b.getTribe(unit.getTribeId());
 
         if(!unit.isFresh())
             return captures;
@@ -31,7 +34,6 @@ public class CaptureFactory implements ActionFactory {
             capture.setTargetCity(-1);
         }else if(t == Types.TERRAIN.CITY) {
             // get city from board, check if action is feasible and add to list
-            Board b = gs.getBoard();
             City c = b.getCityInBorders(unit.getPosition().x, unit.getPosition().y);
             if (c != null) {
                 capture = new Capture(unit.getActorId());

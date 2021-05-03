@@ -4,6 +4,7 @@ import core.TechnologyTree;
 import core.Types;
 import core.actions.Action;
 import core.actors.Tribe;
+import core.game.Board;
 import core.game.GameState;
 import core.actors.units.Unit;
 
@@ -22,6 +23,14 @@ public class Upgrade extends UnitAction
         Unit unit = (Unit) gs.getActor(this.unitId);
         Tribe tribe = gs.getTribe(unit.getTribeId());
         TechnologyTree ttree = tribe.getTechTree();
+
+        Board board = gs.getBoard();
+
+        //if (board.getWeatherAt(unit.getPosition().x,unit.getPosition().y) == Types.WEATHER.RAIN) {
+        //    if (tribe.getType() != Types.TRIBE.ATHENIAN) {
+        //        return false;
+        //    }
+        //}
 
         int stars = gs.getTribe(unit.getTribeId()).getStars();
         return ((unit.getType() == BOAT && ttree.isResearched(Types.TECHNOLOGY.SAILING) && stars >= SHIP.getCost()) ||

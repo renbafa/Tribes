@@ -7,7 +7,6 @@ import core.actors.Actor;
 import core.actors.Tribe;
 import core.game.GameState;
 import utils.Vector2d;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 

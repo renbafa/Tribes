@@ -4,7 +4,9 @@ import core.Types;
 import core.actions.Action;
 import core.actions.ActionCommand;
 import core.actions.unitactions.Recover;
+import core.actors.Tribe;
 import core.actors.units.Unit;
+import core.game.Board;
 import core.game.GameState;
 
 import java.util.ArrayList;
@@ -28,7 +30,6 @@ public class RecoverCommand implements ActionCommand {
 
         //Check if action is feasible before execution
         if (action.isFeasible(gs)) {
-
             int cityID = gs.getBoard().getCityIdAt(unit.getPosition().x, unit.getPosition().y);
             if (cityID != -1){
                 ArrayList<Integer> citesID = gs.getTribe(unit.getTribeId()).getCitiesID();

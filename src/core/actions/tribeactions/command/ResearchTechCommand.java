@@ -6,6 +6,7 @@ import core.actions.ActionCommand;
 import core.actions.tribeactions.ResearchTech;
 import core.actors.Tribe;
 import core.game.GameState;
+import utils.Vector2d;
 
 public class ResearchTechCommand implements ActionCommand {
 
@@ -18,6 +19,7 @@ public class ResearchTechCommand implements ActionCommand {
             Types.TECHNOLOGY tech = action.getTech();
             int tribeId = action.getTribeId();
             Tribe tribe = gs.getTribe(tribeId);
+
             int techCost = tech.getCost(tribe.getNumCities(), tribe.getTechTree());
             tribe.subtractStars(techCost);
             tribe.getTechTree().doResearch(tech);

@@ -28,6 +28,9 @@ public class Build extends CityAction
     @Override
     public boolean isFeasible(final GameState gs) {
 
+        Tribe t = gs.getTribe(gs.getActiveTribeID());
+        Board board = gs.getBoard();
+
         switch (buildingType) {
             //Buildings that can be repeated in a city:
             case PORT:

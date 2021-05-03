@@ -1,5 +1,6 @@
 package core.actors.units;
 
+import core.TribesConfig;
 import core.Types;
 import core.actors.Actor;
 import utils.Vector2d;
@@ -22,6 +23,7 @@ public abstract class Unit extends Actor
     private boolean isVeteran;
     private int cityId;
 
+
     private Types.TURN_STATUS status;
 
 
@@ -41,6 +43,7 @@ public abstract class Unit extends Actor
         this.tribeId = tribeID;
         this.status = FINISHED;
     }
+
 
     public void setCurrentHP(int hp){
         currentHP = hp;

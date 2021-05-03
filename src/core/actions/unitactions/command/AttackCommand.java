@@ -8,12 +8,16 @@ import core.actions.unitactions.Attack;
 import core.actors.City;
 import core.actors.Tribe;
 import core.actors.units.Unit;
+import core.game.Board;
 import core.game.GameState;
 import utils.Pair;
 import utils.Vector2d;
 
+
 import static core.Types.TECHNOLOGY.*;
 import static core.Types.TERRAIN.*;
+
+
 
 public class AttackCommand implements ActionCommand {
 
@@ -36,11 +40,32 @@ public class AttackCommand implements ActionCommand {
             Pair<Integer, Integer> results = getAttackResults(action, gs);
             int attackResult = results.getFirst();
             int defenceResult = results.getSecond();
+            //System.out.println(attackerTribe);
+            Board board = gs.getBoard();
+
+            /**
+             * the following lines show the negative effect of player being on a position where rain is placed,
+             */
+
+            //if attacker tribe is on same coordinate as rain, their attack power will decrease
+            if (board.getWeatherAt(attacker.getPosition().x, attacker.getPosition().y) == Types.WEATHER.RAIN) {
+                if (attackerTribe.getType() != Types.TRIBE.ATHENIAN) {
+                    attackResult *= 0.2; }
+                //if they're athenian, it will increase
+                if (attackerTribe.getType() == Types.TRIBE.ATHENIAN) {
+                    attackResult /= 0.2; }
+            }
+            //if target tribe is on same coordinate as rain, their defense power will decrease
+            if (board.getWeatherAt(target.getPosition().x, target.getPosition().y) == Types.WEATHER.RAIN) {
+                if (attackerTribe.getType() != Types.TRIBE.ATHENIAN) {
+                    defenceResult *= 0.2; }
+                //if they're athenian, it will increase
+                if (attackerTribe.getType() == Types.TRIBE.ATHENIAN) {
+                    defenceResult /= 0.2; }
+            }
+
 
             if (target.getCurrentHP() <= attackResult) {
-
-                int nextHP = Math.max(target.getCurrentHP() - attackResult, 0);
-                target.setCurrentHP(nextHP);
 
                 attacker.addKill();
                 attackerTribe.addKill();
@@ -67,6 +92,20 @@ public class AttackCommand implements ActionCommand {
                 double distance = Vector2d.chebychevDistance(attacker.getPosition(), target.getPosition());
                 if(distance <= target.RANGE)
                 {
+
+                    if (board.getWeatherAt(target.getPosition().x, target.getPosition().y) == Types.WEATHER.RAIN) {
+                        if (attackerTribe.getType() != Types.TRIBE.ATHENIAN) {
+                            //System.out.println("retaliation defense of " +attackerTribe.getType()+ " before " + defenceResult);
+                            defenceResult = 0;
+                            //System.out.println("retaliation defense " +attackerTribe.getType()+ " after " + defenceResult);
+                        }
+                        if (attackerTribe.getType() == Types.TRIBE.ATHENIAN) {
+                            //System.out.println("retaliation defense of " +attackerTribe.getType()+ " before " + defenceResult);
+                            defenceResult /= 0.2;
+                            //System.out.println("retaliation defense " +attackerTribe.getType()+ " after " + defenceResult);
+                        }
+                    }
+
                     //Deal damage based on targets defence stat, regardless of this units defence stat
                     attacker.setCurrentHP(attacker.getCurrentHP()-defenceResult);
                     //Check if attack kills this unit, if it does add a kill to the target

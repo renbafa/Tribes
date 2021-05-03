@@ -3,6 +3,7 @@ package core.actions.unitactions;
 import core.TribesConfig;
 import core.Types;
 import core.actions.Action;
+import core.actors.Tribe;
 import core.game.Board;
 import core.game.GameState;
 import core.actors.units.Unit;
@@ -23,6 +24,19 @@ public class HealOthers extends UnitAction
     public boolean isFeasible(final GameState gs) {
         Board board = gs.getBoard();
         Unit unit = (Unit) gs.getActor(this.unitId);
+        Tribe tribe = gs.getTribe(unit.getTribeId());
+
+
+        /**
+         * the following lines show the negative effect of player being on a position where rain is placed,
+         */
+
+
+        if (board.getWeatherAt(unit.getPosition().x,unit.getPosition().y) == Types.WEATHER.RAIN) {
+            if (tribe.getType() != Types.TRIBE.ATHENIAN) {
+                return false;
+            }
+        }
 
         //This needs to be a mind bender that can "attack"
         if(unit.getType() != Types.UNIT.MIND_BENDER || !unit.canAttack())
@@ -48,6 +62,7 @@ public class HealOthers extends UnitAction
         if(target != null && target.getTribeId() == healer.getTribeId()){
             return (target.getCurrentHP() < target.getMaxHP()) && (target.getTribeId() == healer.getTribeId());
         }
+
         return false;
     }
 

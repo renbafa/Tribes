@@ -63,7 +63,7 @@ class Run {
         {
             case "Xin Xi": return XIN_XI;
             case "Imperius": return IMPERIUS;
-            case "Bardur": return BARDUR;
+            case "Athenian": return ATHENIAN;
             case "Oumaji": return OUMAJI;
         }
         throw new Exception("Error: unrecognized Tribe: " + arg);

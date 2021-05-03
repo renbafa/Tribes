@@ -1,6 +1,7 @@
 package core.actions.tribeactions.command;
 
 import core.TribesConfig;
+import core.Types;
 import core.actions.Action;
 import core.actions.ActionCommand;
 import core.actions.tribeactions.BuildRoad;
@@ -22,6 +23,7 @@ public class BuildRoadCommand implements ActionCommand {
             Tribe tribe = gs.getTribe(tribeId);
             tribe.subtractStars(TribesConfig.ROAD_COST);
             gs.getBoard().addRoad(position.x, position.y);
+
             return true;
         }
         return false;

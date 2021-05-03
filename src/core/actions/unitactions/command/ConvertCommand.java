@@ -19,6 +19,7 @@ public class ConvertCommand implements ActionCommand {
         Convert action = (Convert)a;
         //Check if action is feasible before execution
         if(action.isFeasible(gs)) {
+
             int unitId = action.getUnitId();
             int targetId = action.getTargetId();
             Unit target = (Unit) gs.getActor(targetId);

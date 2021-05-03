@@ -23,6 +23,7 @@ public class ResearchTech extends TribeAction {
     public boolean isFeasible(final GameState gs) {
         Tribe tribe = gs.getTribe(tribeId);
 
+
         if(tech == null)
             return false;
 

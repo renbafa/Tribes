@@ -42,12 +42,14 @@ public class InfoView extends JComponent {
     private JButton actionBF, actionCF, actionD, actionGF, actionRG;
     private JButton[] actionB, actionS;
     private JButton actionRoad;
+    private JButton actionRain;
     private JButton actionResearch;
     private JButton actionHealOthers, actionDisband, actionUpgrade;
     private TribesActionListener listenerBF, listenerCF, listenerD, listenerGF, listenerRG;
     private TribesActionListener listenerS, listenerB;
     private TribesActionListener listenerResearch;
     private TribesActionListener listenerRoad;
+    private TribesActionListener listenerRain;
     private TribesActionListener listenerHealOthers, listenerDisband, listenerUpgrade;
     private ActionController ac;
 
@@ -142,6 +144,13 @@ public class InfoView extends JComponent {
         listenerRoad = new TribesActionListener("BuildRoad");
         actionRoad.addActionListener(listenerRoad);
         actionPanel.add(actionRoad);
+
+        // Make rain action
+        actionRain = new JButton("Make Rain");
+        actionRain.setVisible(false);
+        //listenerRain = new TribesActionListener("MakeRain");
+        actionRain.addActionListener(listenerRain);
+        actionPanel.add(actionRain);
 
         // Unit actions
         actionHealOthers = new JButton("Heal Others");
@@ -314,6 +323,17 @@ public class InfoView extends JComponent {
                 }
             }
         }
+
+        /*if (board.getTribe(board.getActiveTribeID()).getTechTree().isResearched(Types.TECHNOLOGY.FREE_SPIRIT)) {
+            ArrayList<Action> acts = gs.getTribeActions();
+            for (Action a: acts) {
+                if (a.getActionType() == MAKE_RAIN && ((MakeRain) a).getPosition().equals(position)) {
+                    actionRain.setVisible(true);
+                    System.out.println("you can now make rain");
+                    listenerRain.update(board.getActiveTribeID(), position, ac, gs);
+                }
+            }
+        }*/
 
         if (cityID != -1) {
             City c = (City) gs.getBoard().getActor(cityID);
@@ -576,6 +596,10 @@ public class InfoView extends JComponent {
                     a = new BuildRoad(cityID);
                     ((BuildRoad) a).setPosition(position);
                     break;
+                //case "MakeRain":
+                //    a = new MakeRain(cityID);
+                //    ((MakeRain) a).setPosition(position);
+                //    break;
                 case "BurnForest":
                     a = new BurnForest(cityID);
                     ((BurnForest) a).setTargetPos(position);

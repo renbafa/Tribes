@@ -28,6 +28,7 @@ public class UpgradeCommand implements ActionCommand {
         Board board = gs.getBoard();
         City city = (City) board.getActor(unit.getCityId());
 
+
         if(action.isFeasible(gs)){
             Types.UNIT unitType = unit.getType();
             Types.UNIT nextType;

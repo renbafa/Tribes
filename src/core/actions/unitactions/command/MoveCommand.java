@@ -22,7 +22,6 @@ public class MoveCommand implements ActionCommand {
             Board board = gs.getBoard();
             Tribe tribe = gs.getTribe(unit.getTribeId());
             Types.TERRAIN destinationTerrain = board.getTerrainAt(destination.x, destination.y);
-
             board.moveUnit(unit, unit.getPosition().x, unit.getPosition().y, destination.x, destination.y, gs.getRandomGenerator());
 
             if(unit.getType().isWaterUnit()){

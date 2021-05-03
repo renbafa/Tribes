@@ -25,6 +25,8 @@ public class GrowForest extends CityAction
     public boolean isFeasible(final GameState gs) {
         City city = (City) gs.getActor(this.cityId);
         Board b = gs.getBoard();
+        Tribe tribe = gs.getTribe(city.getTribeId());
+
         if(b.getTerrainAt(targetPos.x, targetPos.y) != Types.TERRAIN.PLAIN) return false;
         if(b.getCityIdAt(targetPos.x, targetPos.y) != city.getActorId()) return false;
 

@@ -6,6 +6,7 @@ import core.actions.ActionCommand;
 import core.actions.cityactions.Destroy;
 import core.actors.Building;
 import core.actors.City;
+import core.actors.Tribe;
 import core.game.Board;
 import core.game.GameState;
 import utils.Vector2d;
@@ -19,9 +20,10 @@ public class DestroyCommand implements ActionCommand {
             int cityId = action.getCityId();
             Vector2d targetPos = action.getTargetPos();
             City city = (City) gs.getActor(cityId);
+            Board b = gs.getBoard();
+
             Building buildingToRemove = city.getBuilding(targetPos.x, targetPos.y);
 
-            Board b = gs.getBoard();
             b.setBuildingAt(targetPos.x, targetPos.y, null);
 
             if(buildingToRemove.type == Types.BUILDING.PORT)

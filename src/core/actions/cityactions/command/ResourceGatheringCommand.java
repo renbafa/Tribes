@@ -27,6 +27,7 @@ public class ResourceGatheringCommand implements ActionCommand {
             Tribe tribe = gs.getTribe(city.getTribeId());
             Types.RESOURCE resource = action.getResource();
             tribe.subtractStars(resource.getCost());
+
             switch (resource){
                 case FISH:
                 case ANIMAL:

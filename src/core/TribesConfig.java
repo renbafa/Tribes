@@ -189,6 +189,9 @@ public class TribesConfig
     // ROAD
     public static final int ROAD_COST = 2;
 
+    // RAIN
+    public static final int RAIN_COST = 3;
+
     // City
     public static final int CITY_LEVEL_UP_WORKSHOP_PROD = 1;
     public static final int CITY_LEVEL_UP_RESOURCES = 5;

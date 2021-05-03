@@ -2,6 +2,8 @@ package core.actions.unitactions;
 
 import core.Types;
 import core.actions.Action;
+import core.actors.Tribe;
+import core.game.Board;
 import core.game.GameState;
 import core.actors.units.Unit;
 import utils.Vector2d;
@@ -27,6 +29,10 @@ public class Move extends UnitAction
     public boolean isFeasible(final GameState gs)
     {
         Unit unit = (Unit) gs.getActor(this.unitId);
+        Board board = gs.getBoard();
+        Tribe tribe = gs.getTribe(unit.getTribeId());
+
+
         if(unit == null)
             return false;
         Pathfinder tp = new Pathfinder(unit.getPosition(), new StepMove(gs, unit));

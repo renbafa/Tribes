@@ -4,6 +4,7 @@ import core.Types;
 import core.actions.Action;
 import core.actors.Tribe;
 import core.actors.units.Unit;
+import core.game.Board;
 import core.game.GameState;
 import core.actors.City;
 import utils.Vector2d;
@@ -27,6 +28,15 @@ public class Spawn extends CityAction
 
         City city = (City) gs.getActor(this.cityId);
         Tribe t = gs.getTribe(city.getTribeId());
+        Board b = gs.getBoard();
+
+        //if (b.getWeatherAt(unit_type.getPosition().x,unit_type.getPosition().y) == Types.WEATHER.RAIN) {
+        //    if (t.getType() != Types.TRIBE.ATHENIAN) {
+        //        return false;
+        //    }
+        //}
+
+
 
         //It's a buildable type (no naval units, no giants)
         if(!unit_type.spawnable()) return false;

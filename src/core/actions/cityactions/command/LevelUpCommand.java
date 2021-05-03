@@ -17,6 +17,7 @@ public class LevelUpCommand implements ActionCommand {
     @Override
     public boolean execute(Action a, GameState gs) {
         LevelUp action = (LevelUp)a;
+
         if(!action.isFeasible(gs))
             return false;
 

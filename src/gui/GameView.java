@@ -47,6 +47,8 @@ public class GameView extends JComponent {
 
     boolean[][] actionable;
 
+    private Image rainImg;
+
     // Action animations
     private ArrayList<Pair<Pair<Image, Vector2d>,Pair<Image, Vector2d>>> sourceTargetAnimationInfo;
     private ArrayList<Double> animationSpeed;
@@ -100,6 +102,8 @@ public class GameView extends JComponent {
 //        road = ImageIO.GetInstance().getImage("img/terrain/road.png");
         roadDhalf = ImageIO.GetInstance().getImage("img/terrain/road-d-half.png");
         roadVhalf = ImageIO.GetInstance().getImage("img/terrain/road-v-half.png");
+
+        rainImg = ImageIO.GetInstance().getImage("img/weathers/rain.png");
 
         int expLength = nTilesExplosion * delay;
         int pierceLength = nTilesPierce * delay;
@@ -160,6 +164,7 @@ public class GameView extends JComponent {
         // Update list of actionable tiles to be highlighted (collectible resources)
         updateActionableTiles();
         paintTerrains(g);
+        paintWeathers(g);
         paintRoads(g);
         paintCities(g);
         paintResourcesBuildings(g);
@@ -210,6 +215,19 @@ public class GameView extends JComponent {
                     toPaint = getContextImg(i, j, PLAIN);
                 }
                 paintImageRotated(g, j * CELL_SIZE, i * CELL_SIZE, toPaint, CELL_SIZE, panTranslate);
+            }
+        }
+    }
+
+    private void paintWeathers(Graphics2D g){
+        for(int i = 0; i < gridSize; ++i) {
+            for(int j = 0; j < gridSize; ++j) {
+                Types.WEATHER t = board.getWeatherAt(i,j);
+                Image toPaint;
+                if (t == Types.WEATHER.RAIN) {
+                    toPaint = rainImg;
+                    paintImageRotated(g, j * CELL_SIZE, i * CELL_SIZE, toPaint, CELL_SIZE, panTranslate);
+                }
             }
         }
     }

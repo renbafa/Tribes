@@ -1,9 +1,11 @@
 package core.actions.unitactions.factory;
 
+import core.Types;
 import core.actions.Action;
 import core.actions.ActionFactory;
 import core.actions.unitactions.Convert;
 import core.actors.Actor;
+import core.actors.Tribe;
 import core.actors.units.Unit;
 import core.game.Board;
 import core.game.GameState;

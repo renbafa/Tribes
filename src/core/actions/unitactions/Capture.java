@@ -2,6 +2,7 @@ package core.actions.unitactions;
 
 import core.Types;
 import core.actions.Action;
+import core.actors.Tribe;
 import core.game.Board;
 import core.game.GameState;
 import core.actors.City;
@@ -38,6 +39,18 @@ public class Capture extends UnitAction
         if(!unit.isFresh()) return false;
 
         Board b = gs.getBoard();
+        Tribe thisTribe = b.getTribe(unit.getTribeId());
+
+
+        /**
+         * the following lines show the negative effect of player being on a position where rain is placed,
+         */
+
+        if (b.getWeatherAt(unit.getPosition().x,unit.getPosition().y) == Types.WEATHER.RAIN) {
+            if (thisTribe.getType() != Types.TRIBE.ATHENIAN) {
+                return false;
+            }
+        }
 
         if(captureType == Types.TERRAIN.CITY)
         {

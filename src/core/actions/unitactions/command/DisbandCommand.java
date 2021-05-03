@@ -25,6 +25,7 @@ public class DisbandCommand implements ActionCommand {
 
         if(action.isFeasible(gs))
         {
+
             int starsGained = (int) (unit.COST / 2.0); //half, rounded down
             t.addStars(starsGained);
             b.removeUnitFromBoard(unit);
